@@ -15,16 +15,20 @@ catch (MySql.Data.MySqlClient.MySqlException)
     conn.Open();
     Console.WriteLine("База данных не обнаружена! Нажмите на любую клавишу на клавиатуре, чтобы программа создала базу данных.");
     Console.ReadKey();
+
     string sqlCreateDb = "CREATE DATABASE mydatabase";
     MySqlCommand commandCreateDb = new MySqlCommand(sqlCreateDb, conn);
     commandCreateDb.ExecuteNonQuery();
     Console.Clear();
+
     Console.WriteLine("База данных создана! Нажмите на любую клавишу на клавиатуре, чтобы программа ее настроила.");
     Console.ReadKey();
+
     conn.Close();
     connWithDb.Open();
     MySqlCommand commandCreateTable = new MySqlCommand("CREATE TABLE table1 (pol1 INT, pol2 TEXT)", connWithDb);
     Console.Clear();
+
     commandCreateTable.ExecuteNonQuery();
     Console.WriteLine("База данных настроена! Нажмите на любую клавишу на клавиатуре, чтобы приступить к работе.");
     Console.ReadKey();
@@ -75,8 +79,8 @@ void Main()
                         Console.WriteLine("Введенные данные будут внесены в таблицу, нажмите любую клавишу на клавиатуре.");
                         Console.ReadKey();
 
-                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol1) VALUES (@a)", connWithDb); // SQL запрос на добавление в столбец pol1 таблицы table1 значения из переменной a
-                        command.Parameters.AddWithValue("@a", a); // Добавление в запрос параметра a
+                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol1) VALUES (@param)", connWithDb); // SQL запрос на добавление в столбец pol1 таблицы table1 значения из переменной a
+                        command.Parameters.AddWithValue("@param", a); // Добавление в запрос параметра a
                         command.ExecuteNonQuery(); // Реализация запроса
 
                         Console.WriteLine("Данные внесены! Нажмите на любую клавишу на клавиатуре.");
@@ -107,8 +111,8 @@ void Main()
                         Console.WriteLine("Введенные данные будут внесены в таблицу, нажмите любую клавишу на клавиатуре.");
                         Console.ReadKey();
 
-                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol2) VALUES (@b)", connWithDb);
-                        command.Parameters.AddWithValue("@b", b);
+                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol2) VALUES (@param)", connWithDb);
+                        command.Parameters.AddWithValue("@param", b);
                         command.ExecuteNonQuery();
 
                         Console.WriteLine("Данные внесены! Нажмите на любую клавишу на клавиатуре.");
@@ -146,7 +150,17 @@ void Main()
                     MySqlDataReader readerInt = commandShowInt.ExecuteReader(); // Создание объекта MySqlDataReader
                     while (readerInt.Read())
                     {
-                        Console.WriteLine(readerInt.GetString(0)); // Цикл, который будет выводить строки со значениями в столбце pol1
+                        try
+                        {
+                            Console.WriteLine(readerInt.GetString(0)); // Цикл, который будет выводить строки со значениями в столбце pol1
+                        }
+                        catch (System.Data.SqlTypes.SqlNullValueException)
+                        {
+                            Console.WriteLine("Ошибка! Данная таблица пуста! Сначала внесите какие-либо данные.\nНажмите на любую клавишу на клавиатуре, чтобы вернуться в главное меню.");
+                            Console.ReadKey();
+                            Console.Clear();
+                            Main();
+                        }
                     }
                     Console.ReadKey();
                     Console.Clear();
@@ -160,7 +174,17 @@ void Main()
                     MySqlDataReader readerText = commandShowText.ExecuteReader();
                     while (readerText.Read())
                     {
-                        Console.WriteLine(readerText.GetString(0));
+                        try
+                        {
+                            Console.WriteLine(readerText.GetString(0));
+                        }
+                        catch (System.Data.SqlTypes.SqlNullValueException)
+                        {
+                            Console.WriteLine("Ошибка! Данная таблица пуста! Сначала внесите какие-либо данные.\nНажмите на любую клавишу на клавиатуре, чтобы вернуться в главное меню. ");
+                            Console.ReadKey();
+                            Console.Clear();
+                            Main();
+                        }
                     }
                     Console.ReadKey();
                     Console.Clear();
