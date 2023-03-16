@@ -1,10 +1,36 @@
 ﻿using MySql.Data.MySqlClient;
 
-string connStr = "server=localhost;user=root;database=laba;port=3306;password=;charset=utf8;"; // Строка параметров подключения к серверу базы данных
+string connStr = "server=localhost;user=root;port=3306;password=;charset=utf8;"; // Строка параметров подключения к серверу базы данных
 
 MySqlConnection conn = new MySqlConnection(connStr); // Создание объекта соединения с базой данных
+MySqlConnection connWithDb = new MySqlConnection("database=mydatabase;server=localhost;user=root;port=3306;password=;charset=utf8");
 
-conn.Open(); // Соединение с базой данных.
+try
+{
+    connWithDb.Open();
+    Main();
+}
+catch (MySql.Data.MySqlClient.MySqlException)
+{
+    conn.Open();
+    Console.WriteLine("База данных не обнаружена! Нажмите на любую клавишу на клавиатуре, чтобы программа создала базу данных.");
+    Console.ReadKey();
+    string sqlCreateDb = "CREATE DATABASE mydatabase";
+    MySqlCommand commandCreateDb = new MySqlCommand(sqlCreateDb, conn);
+    commandCreateDb.ExecuteNonQuery();
+    Console.Clear();
+    Console.WriteLine("База данных создана! Нажмите на любую клавишу на клавиатуре, чтобы программа ее настроила.");
+    Console.ReadKey();
+    conn.Close();
+    connWithDb.Open();
+    MySqlCommand commandCreateTable = new MySqlCommand("CREATE TABLE table1 (pol1 INT, pol2 TEXT)", connWithDb);
+    Console.Clear();
+    commandCreateTable.ExecuteNonQuery();
+    Console.WriteLine("База данных настроена! Нажмите на любую клавишу на клавиатуре, чтобы приступить к работе.");
+    Console.ReadKey();
+    Console.Clear();
+    Main();
+}
 
 void Main()
 {
@@ -49,7 +75,7 @@ void Main()
                         Console.WriteLine("Введенные данные будут внесены в таблицу, нажмите любую клавишу на клавиатуре.");
                         Console.ReadKey();
 
-                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol1) VALUES (@a)", conn); // SQL запрос на добавление в столбец pol1 таблицы table1 значения из переменной a
+                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol1) VALUES (@a)", connWithDb); // SQL запрос на добавление в столбец pol1 таблицы table1 значения из переменной a
                         command.Parameters.AddWithValue("@a", a); // Добавление в запрос параметра a
                         command.ExecuteNonQuery(); // Реализация запроса
 
@@ -81,7 +107,7 @@ void Main()
                         Console.WriteLine("Введенные данные будут внесены в таблицу, нажмите любую клавишу на клавиатуре.");
                         Console.ReadKey();
 
-                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol2) VALUES (@b)", conn);
+                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol2) VALUES (@b)", connWithDb);
                         command.Parameters.AddWithValue("@b", b);
                         command.ExecuteNonQuery();
 
@@ -116,7 +142,7 @@ void Main()
             {
                 case '1':
                     Console.Clear();
-                    MySqlCommand commandShowInt = new MySqlCommand("SELECT pol1 FROM table1", conn); // Строка с SQL запросом SELECT
+                    MySqlCommand commandShowInt = new MySqlCommand("SELECT pol1 FROM table1", connWithDb); // Строка с SQL запросом SELECT
                     MySqlDataReader readerInt = commandShowInt.ExecuteReader(); // Создание объекта MySqlDataReader
                     while (readerInt.Read())
                     {
@@ -130,7 +156,7 @@ void Main()
 
                 case '2':
                     Console.Clear();
-                    MySqlCommand commandShowText = new MySqlCommand("SELECT pol2 FROM table1", conn);
+                    MySqlCommand commandShowText = new MySqlCommand("SELECT pol2 FROM table1", connWithDb);
                     MySqlDataReader readerText = commandShowText.ExecuteReader();
                     while (readerText.Read())
                     {
@@ -161,7 +187,7 @@ void Main()
             Console.Clear();
             Console.WriteLine("Нажмите на любую клавишу, чтобы закрыть программу.");
             Console.ReadKey();
-            conn.Close();
+            connWithDb.Close();
             Environment.Exit(0);
             break;
 
@@ -172,5 +198,3 @@ void Main()
             break;
     }
 }
-Main();
-conn.Close(); // Закрытие подключения к серверу базы данных.
