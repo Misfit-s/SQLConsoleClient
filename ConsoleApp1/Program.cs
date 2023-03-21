@@ -3,20 +3,21 @@
 string connStr = "server=localhost;user=root;port=3306;password=;charset=utf8;"; // Строка параметров подключения к серверу базы данных
 
 MySqlConnection conn = new MySqlConnection(connStr); // Создание объекта соединения с базой данных
-MySqlConnection connWithDb = new MySqlConnection("database=mydatabase;server=localhost;user=root;port=3306;password=;charset=utf8");
+MySqlConnection connWithDb = new MySqlConnection("database=mydatabase;server=localhost;user=root;port=3306;password=;charset=utf8"); // Строка подключения непосредственно к базе данных
 
-try
+try // Проверка на наличие базы данных
 {
     connWithDb.Open();
     Main();
 }
-catch (MySql.Data.MySqlClient.MySqlException)
+
+catch (MySql.Data.MySqlClient.MySqlException) // Если база данных не найдена - программа автоматически ее создает и настраивает
 {
     conn.Open();
     Console.WriteLine("База данных не обнаружена! Нажмите на любую клавишу на клавиатуре, чтобы программа создала базу данных.");
     Console.ReadKey();
 
-    string sqlCreateDb = "CREATE DATABASE mydatabase";
+    string sqlCreateDb = "CREATE DATABASE mydatabase"; // SQL строка с параметром создания базы данных
     MySqlCommand commandCreateDb = new MySqlCommand(sqlCreateDb, conn);
     commandCreateDb.ExecuteNonQuery();
     Console.Clear();
@@ -26,7 +27,7 @@ catch (MySql.Data.MySqlClient.MySqlException)
 
     conn.Close();
     connWithDb.Open();
-    MySqlCommand commandCreateTable = new MySqlCommand("CREATE TABLE table1 (pol1 INT, pol2 TEXT)", connWithDb);
+    MySqlCommand commandCreateTable = new MySqlCommand("CREATE TABLE table1 (id INT AUTO_INCREMENT PRIMARY KEY, pol1 INT NOT NULL, pol2 TEXT)", connWithDb); // Строка создания таблицы с необходимыми полями
     Console.Clear();
 
     commandCreateTable.ExecuteNonQuery();
@@ -42,7 +43,7 @@ void Main()
     Console.ReadKey();
     Console.Clear();
     Console.WriteLine("Теперь можно взаимодействовать с данными.");
-    Console.WriteLine("Выберите, что Вы хотите сделать: 1. Внести данные в таблицу. 2. Отобразить данные, содержащиеся в таблице. 0. Выход.");
+    Console.WriteLine("Выберите, что Вы хотите сделать: \n1. Внести данные в таблицу. \n2. Отобразить данные, содержащиеся в таблице. \n3. Удалить данные из таблицы. \n0. Выход.");
 
     char inputMain = Console.ReadKey().KeyChar; // Считывание введенной пользователем цифры и преобразование ее в объект char
 
@@ -73,14 +74,16 @@ void Main()
                         Console.Clear();
                         Main();
                     }
+
                     else
                     {
                         Console.Clear();
                         Console.WriteLine("Введенные данные будут внесены в таблицу, нажмите любую клавишу на клавиатуре.");
                         Console.ReadKey();
 
-                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol1) VALUES (@param)", connWithDb); // SQL запрос на добавление в столбец pol1 таблицы table1 значения из переменной a
+                        MySqlCommand command = new MySqlCommand("INSERT INTO table1 (pol1, pol2) VALUES (@param, @param2)", connWithDb); // SQL запрос на добавление в столбец pol1 таблицы table1 значения из переменной a
                         command.Parameters.AddWithValue("@param", a); // Добавление в запрос параметра a
+                        command.Parameters.AddWithValue("@param2", "0");
                         command.ExecuteNonQuery(); // Реализация запроса
 
                         Console.WriteLine("Данные внесены! Нажмите на любую клавишу на клавиатуре.");
@@ -88,6 +91,7 @@ void Main()
                         Console.Clear();
                         Main();
                     }
+
                     break;
 
                 case '2':
@@ -105,6 +109,7 @@ void Main()
                         Console.Clear();
                         Main();
                     }
+
                     else
                     {
                         Console.Clear();
@@ -120,6 +125,7 @@ void Main()
                         Console.Clear();
                         Main();
                     }
+
                     break;
 
                 case '3':
@@ -142,18 +148,21 @@ void Main()
             Console.Clear();
             Console.WriteLine("Вы выбрали отображение данных из таблицы.\nВыберите, какой тип данных вы хотите отобразить 1. INT 2. TEXT 3. Назад.");
             char inputShow = Console.ReadKey().KeyChar;
+
             switch (inputShow)
             {
                 case '1':
                     Console.Clear();
                     MySqlCommand commandShowInt = new MySqlCommand("SELECT pol1 FROM table1", connWithDb); // Строка с SQL запросом SELECT
                     MySqlDataReader readerInt = commandShowInt.ExecuteReader(); // Создание объекта MySqlDataReader
+
                     while (readerInt.Read())
                     {
                         try
                         {
                             Console.WriteLine(readerInt.GetString(0)); // Цикл, который будет выводить строки со значениями в столбце pol1
                         }
+
                         catch (System.Data.SqlTypes.SqlNullValueException)
                         {
                             Console.WriteLine("Ошибка! Данная таблица пуста! Сначала внесите какие-либо данные.\nНажмите на любую клавишу на клавиатуре, чтобы вернуться в главное меню.");
@@ -162,6 +171,7 @@ void Main()
                             Main();
                         }
                     }
+
                     Console.ReadKey();
                     Console.Clear();
                     readerInt.Close(); // Метод объекта MySqlDataReader, который используется для закрытия чтения данных из результата выполнения запроса.
@@ -172,12 +182,14 @@ void Main()
                     Console.Clear();
                     MySqlCommand commandShowText = new MySqlCommand("SELECT pol2 FROM table1", connWithDb);
                     MySqlDataReader readerText = commandShowText.ExecuteReader();
+
                     while (readerText.Read())
                     {
                         try
                         {
                             Console.WriteLine(readerText.GetString(0));
                         }
+
                         catch (System.Data.SqlTypes.SqlNullValueException)
                         {
                             Console.WriteLine("Ошибка! Данная таблица пуста! Сначала внесите какие-либо данные.\nНажмите на любую клавишу на клавиатуре, чтобы вернуться в главное меню. ");
@@ -186,6 +198,7 @@ void Main()
                             Main();
                         }
                     }
+
                     Console.ReadKey();
                     Console.Clear();
                     readerText.Close();
@@ -206,6 +219,92 @@ void Main()
                     break;
             }
             break;
+
+        case '3':
+            Console.Clear();
+            Console.WriteLine("Вы выбрали удалить данные из таблицы.");
+            Console.WriteLine("Выберите, вы хотите удалить последние внесенные данные, или полностью очистить таблицу?");
+            Console.WriteLine("1. Последние данные.\n2. Все данные.\n0. Назад.");
+            char inputDelete = Console.ReadKey().KeyChar;
+
+            switch (inputDelete)
+            {
+                case '1':
+                    Console.Clear();
+                    Console.WriteLine("Вы выбрали удаление последних внесенных данных.\nУчтите, что удалятся данные из обоих полей.");
+                    Console.ReadKey();
+                    string query = "SELECT MAX(id) FROM table1";
+                    MySqlCommand command = new MySqlCommand(query, connWithDb);
+                    MySqlDataReader readerLastRow = command.ExecuteReader();
+                    readerLastRow.Read();
+
+                    try
+                    {
+                        int lastRowId = (int)readerLastRow[0];
+                        readerLastRow.Close();
+                        query = "DELETE FROM table1 WHERE id = @id";
+                        command = new MySqlCommand(query, connWithDb);
+                        command.Parameters.AddWithValue("@id", lastRowId);
+                        command.ExecuteNonQuery();
+                        Console.WriteLine("Последние внесенные данные удалены из БД! Нажмите на любую клавишу на клавиатуре, чтобы продолжить.");
+                        Console.ReadKey();
+                        Console.Clear();
+                        Main();
+                    }
+
+                    catch (System.InvalidCastException)
+                    {
+                        Console.WriteLine("Ошибка! Скорее всего, таблица пуста. Нажмите на любую клавишу на клавиатуре, чтобы вернуться в главное меню.");
+                        Console.ReadKey();
+                        Console.Clear();
+                        Main();
+                    }
+
+                    break;
+
+                case '2':
+                    Console.Clear();
+                    Console.WriteLine("Вы выбрали удаление всех данных из таблицы.");
+                    Console.WriteLine("Подтвердите, что вы уверены в своем выборе.\n1. Да. 2. Нет.");
+                    char sure = Console.ReadKey().KeyChar;
+
+                    switch (sure)
+                    {
+                        case '1':
+                            Console.Clear();
+                            Console.WriteLine("Начинаю удаленные всех данных...");
+                            MySqlCommand cmd = new MySqlCommand("DELETE FROM table1", connWithDb);
+                            cmd.ExecuteNonQuery();
+                            Console.WriteLine("Все данные успешно удалены! Нажмите на любую клавишу на клавиатуре, чтобы вернуться в главное меню.");
+                            Console.ReadKey();
+                            Console.Clear();
+                            Main();
+                            break;
+
+                        case '2':
+                            Console.Clear();
+                            Console.WriteLine("Нажмите на любую клавишу на клавиатуре, чтобы вернуться в главное меню.");
+                            Console.ReadKey();
+                            Console.Clear();
+                            Main();
+                            break;
+
+                    }break;
+
+                default:
+                    Console.Clear();
+                    Console.WriteLine("Ошибка! Нажмите на любую клавишу, чтобы вернуться в главное меню.");
+                    Console.ReadKey();
+                    Console.Clear();
+                    Main();
+                    break;
+
+                case '0':
+                    Console.Clear();
+                    Main();
+                    break;
+
+            }  break;
 
         case '0':
             Console.Clear();
