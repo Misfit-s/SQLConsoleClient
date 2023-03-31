@@ -91,7 +91,6 @@ void Main()
                         Console.Clear();
                         Main();
                     }
-
                     break;
 
                 case '2':
@@ -125,7 +124,6 @@ void Main()
                         Console.Clear();
                         Main();
                     }
-
                     break;
 
                 case '3':
